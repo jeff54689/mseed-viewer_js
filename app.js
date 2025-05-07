@@ -9,8 +9,8 @@ window.onload = function () {
     reader.onload = function (e) {
       const buffer = e.target.result;
 
-      if (typeof sp === 'undefined') return alert("sp (Seisplotjs) not loaded!");
-      if (typeof DSP === 'undefined') return alert("DSP.js not loaded!");
+      if (typeof sp === 'undefined') return alert("❌ sp (Seisplotjs) not loaded!");
+      if (typeof DSP === 'undefined') return alert("❌ DSP.js not loaded!");
 
       const records = sp.miniseed.parseDataRecords(buffer);
       const segments = sp.miniseed.assembleDataSegments(records);
@@ -31,7 +31,7 @@ window.onload = function () {
   document.getElementById('applyFilter').addEventListener('click', function () {
     const low = parseFloat(document.getElementById('lowCut').value);
     const high = parseFloat(document.getElementById('highCut').value);
-    if (low >= high) return alert("Low cut must be < High cut");
+    if (low >= high) return alert("⚠️ Low cut must be less than High cut!");
 
     const filtered = bandpassFilter(originalValues, low, high, sampleRate);
     plotWaveform(originalTimes, filtered);
