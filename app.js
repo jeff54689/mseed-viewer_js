@@ -5,8 +5,8 @@ document.getElementById('fileInput').addEventListener('change', function(event) 
   const reader = new FileReader();
   reader.onload = function(e) {
     const arrayBuffer = e.target.result;
-    const dataRecords = SeisplotjsMiniseed.parseDataRecords(arrayBuffer);
-    const segments = SeisplotjsMiniseed.assembleDataSegments(dataRecords);
+    const dataRecords = seisplotjs.miniseed.parseDataRecords(arrayBuffer);
+    const segments = seisplotjs.miniseed.assembleDataSegments(dataRecords);
 
     if (segments.length === 0) {
       alert("無法解析 MiniSEED 檔案");
