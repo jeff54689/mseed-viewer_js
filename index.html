@@ -9,12 +9,12 @@
   <script src="https://cdn.jsdelivr.net/npm/seisplotjs@2.4.1/dist/seisplotjs-bundle.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dsp.js@0.0.2/dsp.js"></script>
 
-  <!-- ✅ 強制 sp 掛載 -->
+  <!-- ✅ 手動綁定全域變數 sp -->
   <script>
     window.sp = window.seisplotjs || window.sp;
   </script>
 
-  <!-- 主程式邏輯，延遲執行 -->
+  <!-- 主邏輯 -->
   <script src="app.js" defer></script>
 
   <style>
