@@ -1,33 +1,72 @@
-document.getElementById('applyFilter').addEventListener('click', function() {
-  const cutoff = parseFloat(document.getElementById('lowpass').value);
-  const filter = new DSP.IIRFilter(DSP.LOWPASS, cutoff, seismogram.sampleRate);
-  const filtered = seismogram.yArray.map(sample => filter.process(sample));
-  Plotly.newPlot('waveform', [{
-    x: seismogram.timeArray,
-    y: filtered,
-    type: 'scatter',
-    mode: 'lines',
-    name: 'Filtered Waveform'
-  }], {
-    title: '濾波後波形圖',
-    xaxis: { title: '時間 (s)' },
-    yaxis: { title: '振幅' }
-  });
+let originalTimes = [], originalValues = [], sampleRate = 100;
 
-  // FFT 分析
-  const fft = new DSP.FFT(filtered.length, seismogram.sampleRate);
-  fft.forward(filtered);
-  const frequencies = fft.getBandFrequencyArray();
-  const spectrum = fft.spectrum;
-  Plotly.newPlot('fft', [{
-    x: frequencies,
-    y: spectrum,
+document.getElementById('fileInput').addEventListener('change', function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const buffer = e.target.result;
+    const records = sp.miniseed.parseDataRecords(buffer);
+    const segments = sp.miniseed.assembleDataSegments(records);
+    if (segments.length === 0) return alert("Failed to parse MiniSEED");
+
+    const seg = segments[0];
+    originalTimes = seg.times();
+    originalValues = seg.y();
+    sampleRate = seg.sampleRate;
+
+    plotWaveform(originalTimes, originalValues);
+    plotFFT(originalValues, sampleRate);
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+document.getElementById('applyFilter').addEventListener('click', function() {
+  const low = parseFloat(document.getElementById('lowCut').value);
+  const high = parseFloat(document.getElementById('highCut').value);
+  if (low >= high) return alert("Low cut must be < High cut");
+
+  const filtered = bandpassFilter(originalValues, low, high, sampleRate);
+  plotWaveform(originalTimes, filtered);
+  plotFFT(filtered, sampleRate);
+});
+
+function bandpassFilter(signal, low, high, fs) {
+  const iir = new IIRFilter(DSP.BANDPASS, (low + high) / 2, fs, 1);
+  return signal.map(x => iir.process(x));
+}
+
+function plotWaveform(time, data) {
+  Plotly.newPlot("waveform", [{
+    x: time,
+    y: data,
     type: 'scatter',
     mode: 'lines',
-    name: 'FFT Spectrum'
+    name: 'Waveform'
   }], {
-    title: '頻譜圖',
-    xaxis: { title: '頻率 (Hz)' },
-    yaxis: { title: '振幅' }
+    margin: { t: 30 },
+    xaxis: { title: 'Time (s)' },
+    yaxis: { title: 'Amplitude' }
   });
-});
+}
+
+function plotFFT(data, fs) {
+  const N = data.length;
+  const fft = new FFT(N, fs);
+  fft.forward(data);
+  const freqs = fft.getBandFrequencyArray();
+  const mags = fft.spectrum;
+
+  Plotly.newPlot("fft", [{
+    x: freqs,
+    y: mags,
+    type: 'scatter',
+    mode: 'lines',
+    name: 'FFT'
+  }], {
+    margin: { t: 30 },
+    xaxis: { title: 'Frequency (Hz)' },
+    yaxis: { title: 'Amplitude' }
+  });
+}
