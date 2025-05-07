@@ -1,88 +1,60 @@
-window.onload = function () {
-  let originalTimes = [], originalValues = [], sampleRate = 100;
+let timeArray = [], amplitudeArray = [], sampleRate = 100;
 
-  // 安全檢查
-  if (typeof sp === 'undefined' || !sp.miniseed) {
-    alert("❌ Seisplotjs 未正確載入！");
-    return;
-  }
-  if (typeof DSP === 'undefined') {
-    alert("❌ DSP.js 未正確載入！");
-    return;
-  }
+document.getElementById('csvInput').addEventListener('change', function (e) {
+  const file = e.target.files[0];
+  if (!file) return;
 
-  document.getElementById('fileInput').addEventListener('change', function (event) {
-    const file = event.target.files[0];
-    if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (event) {
+    const lines = event.target.result.trim().split('\n');
+    timeArray = [];
+    amplitudeArray = [];
 
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      const buffer = e.target.result;
+    for (let i = 1; i < lines.length; i++) {
+      const [time, amp] = lines[i].split(',');
+      timeArray.push(new Date(time));
+      amplitudeArray.push(parseFloat(amp));
+    }
 
-      const records = sp.miniseed.parseDataRecords(buffer);
-      const segments = sp.miniseed.assembleDataSegments(records);
-      if (segments.length === 0) return alert("⚠️ 無法從檔案中取得有效波形");
+    // 自動估算 sample rate
+    const dt = (timeArray[1] - timeArray[0]) / 1000;
+    sampleRate = 1 / dt;
 
-      const seg = segments[0];
-      originalTimes = seg.times();
-      originalValues = seg.y();
-      sampleRate = seg.sampleRate;
+    plotWaveform(timeArray, amplitudeArray);
+    plotFFT(amplitudeArray, sampleRate);
+  };
+  reader.readAsText(file);
+});
 
-      plotWaveform(originalTimes, originalValues);
-      const { freqs, mags } = computeFFT(originalValues, sampleRate);
-      plotFFT(freqs, mags);
-    };
-    reader.readAsArrayBuffer(file);
-  });
+document.getElementById('applyFilter').addEventListener('click', function () {
+  const low = parseFloat(document.getElementById('lowCut').value);
+  const high = parseFloat(document.getElementById('highCut').value);
+  if (low >= high) return alert("Low cut must be less than high cut");
 
-  document.getElementById('applyFilter').addEventListener('click', function () {
-    const low = parseFloat(document.getElementById('lowCut').value);
-    const high = parseFloat(document.getElementById('highCut').value);
-    if (low >= high) return alert("⚠️ Low cut must be less than high cut");
+  const iir = new DSP.IIRFilter(DSP.BANDPASS, (low + high) / 2, sampleRate, 1);
+  const filtered = amplitudeArray.map(a => iir.process(a));
+  plotWaveform(timeArray, filtered);
+  plotFFT(filtered, sampleRate);
+});
 
-    const filtered = bandpassFilter(originalValues, low, high, sampleRate);
-    plotWaveform(originalTimes, filtered);
-    const { freqs, mags } = computeFFT(filtered, sampleRate);
-    plotFFT(freqs, mags);
-  });
+function plotWaveform(times, values) {
+  Plotly.newPlot("waveform", [{
+    x: times,
+    y: values,
+    type: 'scatter',
+    mode: 'lines'
+  }]);
+}
 
-  function bandpassFilter(signal, low, high, fs) {
-    const iir = new DSP.IIRFilter(DSP.BANDPASS, (low + high) / 2, fs, 1);
-    return signal.map(x => iir.process(x));
-  }
-
-  function computeFFT(data, fs) {
-    const fft = new DSP.FFT(data.length, fs);
-    fft.forward(data);
-    return {
-      freqs: fft.getBandFrequencyArray(),
-      mags: fft.spectrum
-    };
-  }
-
-  function plotWaveform(times, data) {
-    Plotly.newPlot("waveform", [{
-      x: times,
-      y: data,
-      type: 'scatter',
-      mode: 'lines'
-    }], {
-      title: "Waveform",
-      xaxis: { title: "Time (s)" },
-      yaxis: { title: "Amplitude" }
-    });
-  }
-
-  function plotFFT(freqs, mags) {
-    Plotly.newPlot("fft", [{
-      x: freqs,
-      y: mags,
-      type: 'scatter',
-      mode: 'lines'
-    }], {
-      title: "FFT Spectrum",
-      xaxis: { title: "Frequency (Hz)" },
-      yaxis: { title: "Magnitude" }
-    });
-  }
-};
+function plotFFT(data, fs) {
+  const fft = new DSP.FFT(data.length, fs);
+  fft.forward(data);
+  const freqs = fft.getBandFrequencyArray();
+  const mags = fft.spectrum;
+  Plotly.newPlot("fft", [{
+    x: freqs,
+    y: mags,
+    type: 'scatter',
+    mode: 'lines'
+  }]);
+}
