@@ -1,4 +1,43 @@
-<label for="lowpass">低通濾波器截止頻率 (Hz):</label>
-<input type="number" id="lowpass" value="10">
-<button id="applyFilter">套用濾波器</button>
-<div id="fft"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MiniSEED Viewer with Filter and FFT</title>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/seisplotjs@2.4.1/dist/seisplotjs-bundle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dsp.js@0.0.2/dsp.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+    }
+    #controls {
+      margin: 10px 0;
+    }
+    input {
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>MiniSEED Viewer with Bandpass Filter + FFT</h1>
+
+  <div>
+    <input type="file" id="fileInput" accept=".mseed" />
+  </div>
+
+  <div id="controls">
+    <label>Low Cut (Hz): <input type="number" id="lowCut" value="1" step="0.1" /></label>
+    <label>High Cut (Hz): <input type="number" id="highCut" value="10" step="0.1" /></label>
+    <button id="applyFilter">Apply Filter</button>
+  </div>
+
+  <h3>Waveform</h3>
+  <div id="waveform" style="height: 300px;"></div>
+
+  <h3>FFT Spectrum</h3>
+  <div id="fft" style="height: 300px;"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
