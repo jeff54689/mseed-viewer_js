@@ -9,7 +9,12 @@
   <script src="https://cdn.jsdelivr.net/npm/seisplotjs@2.4.1/dist/seisplotjs-bundle.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dsp.js@0.0.2/dsp.js"></script>
 
-  <!-- 自訂 JS 加上 defer，確保在 DOM 和庫都載入後才執行 -->
+  <!-- ✅ 強制 sp 掛載 -->
+  <script>
+    window.sp = window.seisplotjs || window.sp;
+  </script>
+
+  <!-- 主程式邏輯，延遲執行 -->
   <script src="app.js" defer></script>
 
   <style>
@@ -25,7 +30,7 @@
 <body>
   <h1>MiniSEED Viewer with Bandpass Filter + FFT</h1>
 
-  <input type="file" id="fileInput" accept=".mseed" /><br /><br>
+  <input type="file" id="fileInput" accept=".mseed"><br><br>
 
   <label>Low Cut (Hz):
     <input type="number" id="lowCut" value="1" step="0.1" />
