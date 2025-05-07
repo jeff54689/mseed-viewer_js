@@ -7,8 +7,8 @@ document.getElementById('fileInput').addEventListener('change', function(event) 
   const reader = new FileReader();
   reader.onload = function(e) {
     const buffer = e.target.result;
-    const records = sp.miniseed.parseDataRecords(buffer);
-    const segments = sp.miniseed.assembleDataSegments(records);
+    const records = seisplotjs.miniseed.parseDataRecords(buffer);
+    const segments = seisplotjs.miniseed.assembleDataSegments(records);
     if (segments.length === 0) return alert("Failed to parse MiniSEED");
 
     const seg = segments[0];
