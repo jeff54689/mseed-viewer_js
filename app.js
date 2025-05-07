@@ -9,21 +9,32 @@ window.onload = function () {
     reader.onload = function (e) {
       const buffer = e.target.result;
 
-      if (typeof sp === 'undefined') return alert("❌ sp (Seisplotjs) not loaded!");
-      if (typeof DSP === 'undefined') return alert("❌ DSP.js not loaded!");
+      if (typeof sp === 'undefined' || !sp.miniseed) {
+        alert("❌ Seisplotjs (sp) 未正確載入！");
+        return;
+      }
+      if (typeof DSP === 'undefined') {
+        alert("❌ DSP.js 未正確載入！");
+        return;
+      }
 
-      const records = sp.miniseed.parseDataRecords(buffer);
-      const segments = sp.miniseed.assembleDataSegments(records);
-      if (segments.length === 0) return alert("No valid data segments");
+      try {
+        const records = sp.miniseed.parseDataRecords(buffer);
+        const segments = sp.miniseed.assembleDataSegments(records);
+        if (segments.length === 0) return alert("No valid data segments");
 
-      const seg = segments[0];
-      originalTimes = seg.times();
-      originalValues = seg.y();
-      sampleRate = seg.sampleRate;
+        const seg = segments[0];
+        originalTimes = seg.times();
+        originalValues = seg.y();
+        sampleRate = seg.sampleRate;
 
-      plotWaveform(originalTimes, originalValues);
-      const { freqs, mags } = computeFFT(originalValues, sampleRate);
-      plotFFT(freqs, mags);
+        plotWaveform(originalTimes, originalValues);
+        const { freqs, mags } = computeFFT(originalValues, sampleRate);
+        plotFFT(freqs, mags);
+      } catch (err) {
+        console.error(err);
+        alert("讀取 MiniSEED 時發生錯誤");
+      }
     };
     reader.readAsArrayBuffer(file);
   });
@@ -32,6 +43,7 @@ window.onload = function () {
     const low = parseFloat(document.getElementById('lowCut').value);
     const high = parseFloat(document.getElementById('highCut').value);
     if (low >= high) return alert("⚠️ Low cut must be less than High cut!");
+    if (originalValues.length === 0) return alert("請先上傳 .mseed 檔案");
 
     const filtered = bandpassFilter(originalValues, low, high, sampleRate);
     plotWaveform(originalTimes, filtered);
@@ -49,33 +61,4 @@ window.onload = function () {
     fft.forward(data);
     return {
       freqs: fft.getBandFrequencyArray(),
-      mags: fft.spectrum
-    };
-  }
-
-  function plotWaveform(times, data) {
-    Plotly.newPlot("waveform", [{
-      x: times,
-      y: data,
-      type: 'scatter',
-      mode: 'lines'
-    }], {
-      title: "Waveform",
-      xaxis: { title: "Time (s)" },
-      yaxis: { title: "Amplitude" }
-    });
-  }
-
-  function plotFFT(freqs, mags) {
-    Plotly.newPlot("fft", [{
-      x: freqs,
-      y: mags,
-      type: 'scatter',
-      mode: 'lines'
-    }], {
-      title: "FFT Spectrum",
-      xaxis: { title: "Frequency (Hz)" },
-      yaxis: { title: "Magnitude" }
-    });
-  }
-};
+     
