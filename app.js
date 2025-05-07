@@ -1,33 +1,33 @@
-document.getElementById('fileInput').addEventListener('change', function(event) {
-  const file = event.target.files[0];
-  if (!file) return;
+document.getElementById('applyFilter').addEventListener('click', function() {
+  const cutoff = parseFloat(document.getElementById('lowpass').value);
+  const filter = new DSP.IIRFilter(DSP.LOWPASS, cutoff, seismogram.sampleRate);
+  const filtered = seismogram.yArray.map(sample => filter.process(sample));
+  Plotly.newPlot('waveform', [{
+    x: seismogram.timeArray,
+    y: filtered,
+    type: 'scatter',
+    mode: 'lines',
+    name: 'Filtered Waveform'
+  }], {
+    title: '濾波後波形圖',
+    xaxis: { title: '時間 (s)' },
+    yaxis: { title: '振幅' }
+  });
 
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const arrayBuffer = e.target.result;
-    const dataRecords = seisplotjs.miniseed.parseDataRecords(arrayBuffer);
-    const segments = seisplotjs.miniseed.assembleDataSegments(dataRecords);
-
-    if (segments.length === 0) {
-      alert("無法解析 MiniSEED 檔案");
-      return;
-    }
-
-    const seg = segments[0];
-    const times = seg.times();
-    const values = seg.y();
-
-    Plotly.newPlot("waveform", [{
-      x: times,
-      y: values,
-      type: "scatter",
-      mode: "lines",
-      name: `${seg.codes()}`,
-    }], {
-      title: `波形圖：${seg.codes()}`,
-      xaxis: { title: "時間" },
-      yaxis: { title: "振幅" }
-    });
-  };
-  reader.readAsArrayBuffer(file);
+  // FFT 分析
+  const fft = new DSP.FFT(filtered.length, seismogram.sampleRate);
+  fft.forward(filtered);
+  const frequencies = fft.getBandFrequencyArray();
+  const spectrum = fft.spectrum;
+  Plotly.newPlot('fft', [{
+    x: frequencies,
+    y: spectrum,
+    type: 'scatter',
+    mode: 'lines',
+    name: 'FFT Spectrum'
+  }], {
+    title: '頻譜圖',
+    xaxis: { title: '頻率 (Hz)' },
+    yaxis: { title: '振幅' }
+  });
 });
