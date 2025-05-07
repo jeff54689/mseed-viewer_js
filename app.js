@@ -33,7 +33,7 @@ document.getElementById('applyFilter').addEventListener('click', function() {
 });
 
 function bandpassFilter(signal, low, high, fs) {
-  const iir = new IIRFilter(DSP.BANDPASS, (low + high) / 2, fs, 1);
+  const iir = new DSP.IIRFilter(DSP.BANDPASS, (low + high) / 2, fs, 1);
   return signal.map(x => iir.process(x));
 }
 
