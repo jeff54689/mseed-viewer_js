@@ -9,12 +9,12 @@
   <script src="https://cdn.jsdelivr.net/npm/seisplotjs@2.4.1/dist/seisplotjs-bundle.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dsp.js@0.0.2/dsp.js"></script>
 
-  <!-- ✅ 手動綁定全域變數 sp -->
+  <!-- ✅ 保證 sp 定義 -->
   <script>
     window.sp = window.seisplotjs || window.sp;
   </script>
 
-  <!-- 主邏輯 -->
+  <!-- 主程式邏輯 -->
   <script src="app.js" defer></script>
 
   <style>
@@ -32,12 +32,8 @@
 
   <input type="file" id="fileInput" accept=".mseed"><br><br>
 
-  <label>Low Cut (Hz):
-    <input type="number" id="lowCut" value="1" step="0.1" />
-  </label>
-  <label>High Cut (Hz):
-    <input type="number" id="highCut" value="10" step="0.1" />
-  </label>
+  <label>Low Cut (Hz): <input type="number" id="lowCut" value="1" step="0.1" /></label>
+  <label>High Cut (Hz): <input type="number" id="highCut" value="10" step="0.1" /></label>
   <button id="applyFilter">Apply Filter</button>
 
   <h3>Waveform</h3>
