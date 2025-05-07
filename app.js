@@ -5,8 +5,8 @@ document.getElementById('fileInput').addEventListener('change', function(event) 
   const reader = new FileReader();
   reader.onload = function(e) {
     const arrayBuffer = e.target.result;
-    const dataRecords = sp.miniseed.parseDataRecords(arrayBuffer);
-    const segments = sp.miniseed.assembleDataSegments(dataRecords);
+    const dataRecords = seisplotjs.miniseed.parseDataRecords(arrayBuffer);
+    const segments = seisplotjs.miniseed.assembleDataSegments(dataRecords);
 
     if (segments.length === 0) {
       alert("無法解析 MiniSEED 檔案");
@@ -24,9 +24,9 @@ document.getElementById('fileInput').addEventListener('change', function(event) 
       mode: "lines",
       name: `${seg.codes()}`,
     }], {
-      title: `Waveform: ${seg.codes()}`,
-      xaxis: { title: "Time" },
-      yaxis: { title: "Amplitude" }
+      title: `波形圖：${seg.codes()}`,
+      xaxis: { title: "時間" },
+      yaxis: { title: "振幅" }
     });
   };
   reader.readAsArrayBuffer(file);
