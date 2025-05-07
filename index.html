@@ -2,16 +2,37 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>MiniSEED Viewer</title>
+  <title>MiniSEED Viewer with Filter and FFT</title>
+
+  <!-- 外部函式庫 -->
   <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/seisplotjs@2.4.1/dist/seisplotjs-bundle.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dsp.js@0.0.2/dsp.js"></script>
+
+  <!-- 自訂 JS 加上 defer，確保在 DOM 和庫都載入後才執行 -->
+  <script src="app.js" defer></script>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+    }
+    label {
+      margin-right: 10px;
+    }
+  </style>
 </head>
 <body>
-  <h1>MiniSEED Viewer with Filter + FFT</h1>
-  <input type="file" id="fileInput" accept=".mseed"><br><br>
-  <label>Low Cut (Hz): <input type="number" id="lowCut" value="1" step="0.1" /></label>
-  <label>High Cut (Hz): <input type="number" id="highCut" value="10" step="0.1" /></label>
+  <h1>MiniSEED Viewer with Bandpass Filter + FFT</h1>
+
+  <input type="file" id="fileInput" accept=".mseed" /><br /><br>
+
+  <label>Low Cut (Hz):
+    <input type="number" id="lowCut" value="1" step="0.1" />
+  </label>
+  <label>High Cut (Hz):
+    <input type="number" id="highCut" value="10" step="0.1" />
+  </label>
   <button id="applyFilter">Apply Filter</button>
 
   <h3>Waveform</h3>
@@ -19,11 +40,5 @@
 
   <h3>FFT Spectrum</h3>
   <div id="fft" style="height: 300px;"></div>
-
-  <!-- 拆分後的模組 -->
-  <script src="reader.js"></script>
-  <script src="filter.js"></script>
-  <script src="display.js"></script>
-  <script src="main.js"></script>
 </body>
 </html>
