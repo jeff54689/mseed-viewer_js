@@ -1,6 +1,7 @@
 import sys
 from obspy import read
 
+
 if len(sys.argv) != 2:
     print("Usage: python mseed_to_csv.py yourfile.mseed")
     sys.exit(1)
