@@ -7,9 +7,10 @@ document.getElementById('fileInput').addEventListener('change', function(event) 
   const reader = new FileReader();
   reader.onload = function(e) {
     const buffer = e.target.result;
-    const records = seisplotjs.miniseed.parseDataRecords(buffer);
-    const segments = seisplotjs.miniseed.assembleDataSegments(records);
-    if (segments.length === 0) return alert("Failed to parse MiniSEED");
+    const records = sp.miniseed.parseDataRecords(buffer); // ✅ 使用 sp
+    const segments = sp.miniseed.assembleDataSegments(records);
+
+    if (segments.length === 0) return alert("No valid data segments found.");
 
     const seg = segments[0];
     originalTimes = seg.times();
@@ -33,7 +34,7 @@ document.getElementById('applyFilter').addEventListener('click', function() {
 });
 
 function bandpassFilter(signal, low, high, fs) {
-  const iir = new DSP.IIRFilter(DSP.BANDPASS, (low + high) / 2, fs, 1);
+  const iir = new DSP.IIRFilter(DSP.BANDPASS, (low + high) / 2, fs, 1); // ✅ 使用 DSP.
   return signal.map(x => iir.process(x));
 }
 
@@ -53,7 +54,7 @@ function plotWaveform(time, data) {
 
 function plotFFT(data, fs) {
   const N = data.length;
-  const fft = new FFT(N, fs);
+  const fft = new DSP.FFT(N, fs);
   fft.forward(data);
   const freqs = fft.getBandFrequencyArray();
   const mags = fft.spectrum;
@@ -63,7 +64,7 @@ function plotFFT(data, fs) {
     y: mags,
     type: 'scatter',
     mode: 'lines',
-    name: 'FFT'
+    name: 'FFT Spectrum'
   }], {
     margin: { t: 30 },
     xaxis: { title: 'Frequency (Hz)' },
